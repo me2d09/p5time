@@ -1,0 +1,8 @@
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dc:title>Sample 1</dc:title>
+  <dc:creator>John Tunnicliffe</dc:creator>
+  <dc:subject>ExcelPackage Samples</dc:subject>
+  <cp:keywords>Office Open XML</cp:keywords>
+  <cp:category>ExcelPackage Samples</cp:category>
+  <dc:description>This sample demonstrates how to create an Excel 2007 file from scratch using the Packaging API and Office Open XML</dc:description>
+</cp:coreProperties>

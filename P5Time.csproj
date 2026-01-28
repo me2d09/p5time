@@ -317,7 +317,7 @@
     </PublishFile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Library\excelpackage\src\ExcelPackage.csproj">
+    <ProjectReference Include="library\excelpackage\src\ExcelPackage.csproj">
       <Project>{7B288026-5502-4A39-BF41-77E086F3E4A3}</Project>
       <Name>ExcelPackage</Name>
     </ProjectReference>

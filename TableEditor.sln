@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P5Time", "P5Time.csproj", "{EE6AE06F-6BAC-4265-89B3-9CB5099D2D70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPackage", "..\..\..\..\Library\excelpackage\src\ExcelPackage.csproj", "{7B288026-5502-4A39-BF41-77E086F3E4A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPackage", "library\excelpackage\src\ExcelPackage.csproj", "{7B288026-5502-4A39-BF41-77E086F3E4A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPackageSamples", "..\..\..\..\Library\excelpackage\template\ExcelPackageSamples.csproj", "{06BF3C68-E7D4-4579-90BE-E36DACE564EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPackageSamples", "library\excelpackage\template\ExcelPackageSamples.csproj", "{06BF3C68-E7D4-4579-90BE-E36DACE564EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
