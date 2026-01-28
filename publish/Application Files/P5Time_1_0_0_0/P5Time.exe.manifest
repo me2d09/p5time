@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1">
+  <asmv1:assemblyIdentity name="P5Time.exe" version="1.0.0.0" publicKeyToken="3acf56c958a0c13d" language="neutral" processorArchitecture="msil" type="win32" />
+  <description asmv2:iconFile="favicon.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
+  <application />
+  <entryPoint>
+    <assemblyIdentity name="P5Time" version="1.0.3029.2442" language="neutral" processorArchitecture="msil" />
+    <commandLine file="P5Time.exe" parameters="" />
+  </entryPoint>
+  <trustInfo>
+    <security>
+      <applicationRequestMinimum>
+        <PermissionSet Unrestricted="true" ID="Custom" SameSite="site" />
+        <defaultAssemblyRequest permissionSetReference="Custom" />
+      </applicationRequestMinimum>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!--
+          UAC Manifest Options
+          If you want to change the Windows User Account Control level replace the 
+          requestedExecutionLevel node with one of the following.
+
+        <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
+        <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
+        <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
+
+         If you want to utilize File and Registry Virtualization for backward 
+         compatibility then delete the requestedExecutionLevel node.
+    -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <dependency>
+    <dependentOS>
+      <osVersionInfo>
+        <os majorVersion="4" minorVersion="10" buildNumber="0" servicePackMajor="0" />
+      </osVersionInfo>
+    </dependentOS>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="Microsoft.Windows.CommonLanguageRuntime" version="2.0.50727.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="MySql.Data" version="5.2.1.0" publicKeyToken="C5687FC88969C44D" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="P5Time.exe" size="286720">
+      <assemblyIdentity name="P5Time" version="1.0.3029.2442" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>q+AHImFm8FpAhkcMm1MLTrSHcDM=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <file name="App.ico" size="1078">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+      <dsig:DigestValue>GM7OUb4teOfGVJg9lxgqFUWHPYk=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="favicon.ico" size="1150">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+      <dsig:DigestValue>2jnYfeT+9TBZc0mZveX+PHbdxa8=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="P5Time.exe.config" size="421">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+      <dsig:DigestValue>Ah3YPqFht/b5nafECsZD+d3NKd8=</dsig:DigestValue>
+    </hash>
+  </file>
+<publisherIdentity name="CN=excalibur\me2d09" issuerKeyHash="0a8cdbd1ec3c2af51a7d2cc85e07e9c2eb275d85" /><Signature Id="StrongNameSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>bO0SIBpHXOfsurjkY2E3OWWrIfs=</DigestValue></Reference></SignedInfo><SignatureValue>KtvzREzxNN80cArHhzL+pNmVbY4KvtLuj4evU36THUmhBeXfZ7uWGB7y8xaBgRPRGN3SzRnTnfy2hBbSYkINGnJX4hcetFvg7ypBR9cX1w3XMLNYVVxVwDqH/+DnQ9ToOdJ1t1iAV2hFLkddEiH9wl5RiPeNoGwqZcEu7sJMfVk=</SignatureValue><KeyInfo Id="StrongNameKeyInfo"><KeyValue><RSAKeyValue><Modulus>heRTmVXDQg+WKjU4cVF21dneaIRWXnGuLCjYOj/naojhwt90ZcRCFWIOpD23aKn70MICUiF2WIVtFGE4d+AjQ3rLs6ZYUZdQNW101GiibkAMdImmXUuNt4b/B9X47gsKdK+cDxX811CqufdnX/VPFtM7dXDshHDsy2sngZAWMOc=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><msrel:RelData xmlns:msrel="http://schemas.microsoft.com/windows/rel/2005/reldata"><r:license xmlns:r="urn:mpeg:mpeg21:2003:01-REL-R-NS" xmlns:as="http://schemas.microsoft.com/windows/pki/2005/Authenticode"><r:grant><as:ManifestInformation Hash="fb21ab6539376163e4b8baece75c471a2012ed6c" Description="" Url=""><as:assemblyIdentity name="P5Time.exe" version="1.0.0.0" publicKeyToken="3acf56c958a0c13d" language="neutral" processorArchitecture="msil" type="win32" /></as:ManifestInformation><as:SignedBy /><as:AuthenticodePublisher><as:X509SubjectName>CN=excalibur\me2d09</as:X509SubjectName></as:AuthenticodePublisher></r:grant><r:issuer><Signature Id="AuthenticodeSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>0mwvt9xUjCsiOxMXjjCgusSsyt4=</DigestValue></Reference></SignedInfo><SignatureValue>ODxoJeRB3b3G4gfMlG2qY8oFegABrsM879BKTKDs97dgg7y95iEKjhgKq+9EPv5/ZYfGITfLJAi5GxsvHUF4yNqV+mopSG/V0FQQGSygu9PnIID6iy69rG0ZjyRYii36AgJZKoI961l2684RdJV7ymaG99ADrgW5WyqPTMUXfZM=</SignatureValue><KeyInfo><KeyValue><RSAKeyValue><Modulus>heRTmVXDQg+WKjU4cVF21dneaIRWXnGuLCjYOj/naojhwt90ZcRCFWIOpD23aKn70MICUiF2WIVtFGE4d+AjQ3rLs6ZYUZdQNW101GiibkAMdImmXUuNt4b/B9X47gsKdK+cDxX811CqufdnX/VPFtM7dXDshHDsy2sngZAWMOc=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><X509Data><X509Certificate>MIIB2TCCAUKgAwIBAgIQeF7L/hM4XoxJOlfuspGvsDANBgkqhkiG9w0BAQUFADArMSkwJwYDVQQDHiAAZQB4AGMAYQBsAGkAYgB1AHIAXABtAGUAMgBkADAAOTAeFw0wODA0MTcwMDIxMjNaFw0wOTA0MTcwNjIxMjNaMCsxKTAnBgNVBAMeIABlAHgAYwBhAGwAaQBiAHUAcgBcAG0AZQAyAGQAMAA5MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCF5FOZVcNCD5YqNThxUXbV2d5ohFZeca4sKNg6P+dqiOHC33RlxEIVYg6kPbdoqfvQwgJSIXZYhW0UYTh34CNDesuzplhRl1A1bXTUaKJuQAx0iaZdS423hv8H1fjuCwp0r5wPFfzXUKq592df9U8W0zt1cOyEcOzLayeBkBYw5wIDAQABMA0GCSqGSIb3DQEBBQUAA4GBAHg4TyPHVEvuAbfOVdw4CPoqiuGBL3sxV34ZYpt/80NLsk6NFP2dxyOeD52xAvYGd9PN/QJbbfzpY015Heqrt0aZRkrVvLUhHAEMXFC7l5WPbaNtLoAnKV0uNfz21HuVKX912cJkKfZmS0NXW3tNm1suVSHKvyoPg2kmqxnzjAfk</X509Certificate></X509Data></KeyInfo></Signature></r:issuer></r:license></msrel:RelData></KeyInfo></Signature></asmv1:assembly>

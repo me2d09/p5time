@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <configSections>
+    </configSections>
+    <connectionStrings>
+        <add name="P5Time.Properties.Settings.conn" connectionString="server=localhost;user id=root;Password=&quot;Wbr 1476&quot;;persist security info=True;database=p5time_svazvodaku_cz"
+            providerName="MySql.Data.MySqlClient" />
+    </connectionStrings>
+</configuration>

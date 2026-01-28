@@ -1,0 +1,1632 @@
+
+		/// <summary>
+		/// The main entry point for the application.
+		/// </summary>
+		[STAThread]
+		static void Main() 
+		{
+			Application.Run(new Form1());
+		}
+
+
+
+        private void GetTables()
+        {
+            MySqlDataReader reader = null;
+
+            //conn.ChangeDatabase( databaseList.SelectedItem.ToString() );
+
+            MySqlCommand cmd = new MySqlCommand("SHOW TABLES", conn);
+            try
+            {
+                reader = cmd.ExecuteReader();
+                tables.Items.Clear();
+                while (reader.Read())
+                {
+                    tables.Items.Add(reader.GetString(0));
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Failed to populate table list: " + ex.Message);
+            }
+            finally
+            {
+                if (reader != null) reader.Close();
+            }
+        }
+
+        private void GetPohary()
+        {
+            try
+            {
+                data = new DataTable();
+                da = new MySqlDataAdapter("SELECT id_poharu, nazev FROM cis_poharu", conn);
+                cb = new MySqlCommandBuilder(da);
+                da.Fill(data);
+                cmbSezona.DisplayMember = "nazev";
+                cmbSezona.ValueMember = "id_poharu";
+                cmbSezona.DataSource = data;
+                
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Failed to get pohary list: " + ex.Message);
+            }
+            finally
+            {
+                
+            }
+            //NactiSezonu z registru
+            int? x = Common.GetPohar();
+            if (x != null)
+            {
+                cmbSezona.SelectedValue = x;
+                //pokud je, nastavim zavod
+                if (Common.LastZavod != 0)
+                {
+                    GetZavody();
+                    tabControl1.SelectedIndex = Common.LastTab;
+                }
+               
+            }
+            else
+                Common.SetPohar(int.Parse(cmbSezona.SelectedValue.ToString()));
+        }
+
+        private void GetZavody()
+        {
+            int lastrow = 0;
+            if (data2 != null)
+            {
+                foreach (DataRow r in data2.Rows)
+                {
+                    if (r["id_zavodu"].ToString() == Common.LastZavod.ToString())
+                    {
+                        lastrow = data2.Rows.IndexOf(r);
+                    }
+                }
+            }
+            data2 = new DataTable();
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM zavod WHERE id_poharu = ?pohar", conn);
+            cmd.Parameters.AddWithValue("pohar", cmbSezona.SelectedValue);
+            da = new MySqlDataAdapter(cmd);
+            cb = new MySqlCommandBuilder(da);
+            da.FillLoadOption = LoadOption.PreserveChanges;
+            da.Fill(data2);
+            if (lastrow == 0)
+            {
+                foreach (DataRow r in data2.Rows)
+                {
+                    if (r["id_zavodu"].ToString() == Common.LastZavod.ToString())
+                    {
+                        lastrow = data2.Rows.IndexOf(r);
+                    }
+                }
+            }
+            data2.Columns["id_poharu"].DefaultValue = cmbSezona.SelectedValue;
+            grdZavody.AutoGenerateColumns = false;
+            grdZavody.DataSource = data2;
+            grdZavody.AutoResizeColumns();
+            GetDiscipliny();
+            grdZavody.CurrentCell = grdZavody[0, lastrow];
+            AZ.Refresh();
+
+        }
+
+        private void GetDiscipliny()
+        {
+            if (grdZavody.CurrentRow != null)
+            {
+                if (data2.DefaultView[grdZavody.CurrentRow.Index].IsNew)
+                {
+                    grdDiscipliny.DataSource = null;
+                    grdDiscipliny.Enabled = false;
+                }
+                else
+                {
+                    if (data2.GetChanges() == null)  //jestli jsou zmeny, musi se nejdriv aplikovat
+                    {
+                        dataDiscipliny = new DataTable();
+                        int SelectedZavod;
+                        if (int.TryParse(data2.DefaultView[grdZavody.CurrentRow.Index]["id_zavodu"].ToString(), out SelectedZavod))
+                        {
+                            MySqlCommand cmd = new MySqlCommand("SELECT * FROM discipliny_zavodu WHERE id_zavodu = ?zavod", conn);
+                            cmd.Parameters.AddWithValue("zavod", SelectedZavod);
+                            daDisc = new MySqlDataAdapter(cmd);
+                            MySqlCommandBuilder mycb = new MySqlCommandBuilder(daDisc);
+
+                            daDisc.Fill(dataDiscipliny);
+                            dataDiscipliny.Columns["id_zavodu"].DefaultValue = SelectedZavod;
+                            grdDiscipliny.AutoGenerateColumns = false;
+                            grdDiscipliny.DataSource = dataDiscipliny;
+                            grdDiscipliny.Enabled = true;
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            //kdyz je nacteny form, nactu data do comboboxu
+            this.cis_statusyTableAdapter.Fill(this.p5time_svazvodaku_czStatusy.cis_statusy);
+            this.cis_kategoriiTableAdapter.Fill(this.p5time_svazvodaku_czDataSet3.cis_kategorii);
+            if (Common.AutoStart) toolStripButton1_Click(sender, new EventArgs());
+        }
+
+
+        // obsluha cudliku na toolbaru
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            if (conn != null)
+            {
+                conn.Close();
+                statusDB.Text = "odpojeno";
+                tabControl1.Enabled = false;
+                toolStripButton1.Visible = true;
+                toolStripButton2.Visible = false;
+            }
+            /*
+            Common.ConnectionSettings con = Common.GetServerSettings();
+
+            string connStr = String.Format("server={0};user id={1}; password={2}; database={3}; pooling=false",
+                con.Server, con.UserId, con.Password, con.Database);*/
+            string connStr = ConfigurationManager.ConnectionStrings["P5Time.Properties.Settings.conn"].ConnectionString;
+            try
+            {
+                conn = new MySqlConnection(connStr);
+                conn.Open();
+                statusDB.Text = "pøipojeno";
+                tabControl1.Enabled = true;
+                toolStripButton1.Visible = false;
+                toolStripButton2.Visible = true;
+                // TODO: This line of code loads data into the 'p5time_svazvodaku_czDataSet2.cis_disciplin' table. You can move, or remove it, as needed.
+                this.cis_disciplinTableAdapter.Fill(this.p5time_svazvodaku_czDataSet2.cis_disciplin);
+                // TODO: This line of code loads data into the 'p5time_svazvodaku_czDataSet1.vkluby' table. You can move, or remove it, as needed.
+                this.vklubyTableAdapter.Fill(this.p5time_svazvodaku_czDataSet1.vkluby);
+                // TODO: This line of code loads data into the 'p5time_svazvodaku_czDataSet.vosoby' table. You can move, or remove it, as needed.
+                this.vosobyTableAdapter.Fill(this.p5time_svazvodaku_czDataSet.vosoby);
+
+                GetPohary();
+
+                
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error connecting to the server: " + ex.Message);
+            }
+        }
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            conn.Close();
+            statusDB.Text = "odpojeno";
+            toolStripButton1.Visible = true;
+            toolStripButton2.Visible = false;
+            tabControl1.Enabled = false;
+        }
+        private void konecToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        private void nastaveníToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form2 f = new Form2();
+            f.ShowDialog();
+        }
+
+        /// <summary>
+        /// Pri prepnuti tabu to nacte prislusny data z DB a refreshuje to datatable
+        /// </summary>
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            
+
+            if (tabControl1.SelectedTab == tWelcome)
+            {
+
+            }
+            else if (tabControl1.SelectedTab == tZavody)
+            { //zavody
+                    GetZavody();
+            }
+            else if (tabControl1.SelectedTab == tPosadky)
+            { //posadky
+                    AutoCompleteStringCollection ac = new AutoCompleteStringCollection();
+                    foreach (DataRowView dr in vosobyTableAdapter.GetData().DefaultView)
+                	{
+                        ac.Add(string.Format("{0} |{1}", dr["jmeno"], dr["id"]));
+                    }
+                    txtNewZavodnik.AutoCompleteCustomSource = ac;
+
+                    RefreshExistingPosadky();
+
+                    
+                    lstDisciplinyPosadky.ValueMember = "id_discipliny";
+                    lstDisciplinyPosadky.DisplayMember = "nazev";
+                    lstDisciplinyPosadky.DataSource = dataDiscipliny;
+                    for (int i = 0; i < lstDisciplinyPosadky.Items.Count; i++)
+                    {
+                        lstDisciplinyPosadky.SetSelected(i, true);               
+                    }
+                    RefreshZavodnici();
+            }
+            else if (tabControl1.SelectedTab == tRozlosovani)
+            {
+                    RefreshRozlosovani();
+            }
+            else if (tabControl1.SelectedTab == tStartovka)
+            { //startovka
+                    cmbStartovkaDiscipliny.ValueMember = "id_discipliny";
+                    cmbStartovkaDiscipliny.DisplayMember = "nazev";
+                    cmbStartovkaDiscipliny.DataSource = dataDiscipliny;
+                    RefreshStartovka();
+            }
+            else if (tabControl1.SelectedTab == tVysledky)
+            { //zadávání výsledkù
+                    cmbVysledkyDiscipliny.ValueMember = "id_discipliny";
+                    cmbVysledkyDiscipliny.DisplayMember = "nazev";
+                    cmbVysledkyDiscipliny.DataSource = dataDiscipliny;
+                    RefreshVysledky();
+                    radioButton1_CheckedChanged(null, new EventArgs());
+                    rbCilovy_CheckedChanged(null, new EventArgs());
+            }
+            else if (tabControl1.SelectedTab == tVysledkovka)
+            {//zadávání výsledkù
+                    RefreshVysledkovka();
+            }
+            else if (tabControl1.SelectedTab == tExport)
+            {
+
+            }
+            else if (tabControl1.SelectedTab == tCiselniky)
+            {
+                    GetTables();
+            }
+            Common.LastTab = tabControl1.SelectedIndex;
+        }
+
+
+        #region Refreshovaci funkce na DataTably - vykonavani SQL dotazu
+            private void RefreshStartovka()
+            {
+                //nacti existujici posadky
+                MySqlCommand cmd = new MySqlCommand(
+    @"SELECT GROUP_CONCAT(O.jmeno ORDER BY Z.id_zavodnik_disciplina SEPARATOR '\r\n') AS clenove, 
+    GROUP_CONCAT(CAST(O.rocnik AS char(4)) ORDER BY Z.id_zavodnik_disciplina SEPARATOR '\r\n') AS rocniky, 
+    D.id_posadky_discipliny AS id, P.nazev, VK.cisloklubu AS cisloklubu, CONCAT(P.nazev, '\r\n', VK.nazev) AS nazevfull, P.startovni_cislo, timefromint(V.start1) AS start1, timefromint(V.start2) AS start2, P.id_kat
+    FROM posadky_zavodu AS P 
+    LEFT JOIN posadky_discipliny AS D ON D.id_posadky_zavodu = P.id_posadky_zavodu
+    LEFT JOIN zavodnici_discipliny AS Z ON Z.id_posadky_discipliny = D.id_posadky_discipliny
+    LEFT JOIN vosoby2 AS O ON O.id = Z.id_zavodnika
+    LEFT JOIN vkluby AS VK ON VK.id = P.id_klubu
+    LEFT JOIN prubezne_vysledky AS V ON V.id_posadky_discipliny = D.id_posadky_discipliny 
+    WHERE P.id_zavodu = ?zavod AND D.id_discipliny = ?disc GROUP BY D.id_posadky_discipliny ORDER BY id_kat, P.startovni_cislo", conn);
+                cmd.Parameters.AddWithValue("zavod", AZ.Zavod);
+                cmd.Parameters.AddWithValue("disc", cmbStartovkaDiscipliny.SelectedValue);
+                dataStartovka = new DataTable();
+                daStartovka = new MySqlDataAdapter(cmd);
+
+                // Create the UpdateCommand.
+                cmd = new MySqlCommand("ins_start_time", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("?in_id_posadky_discipliny", MySqlDbType.Int32, 11, "id");
+                cmd.Parameters.Add("?in_start1", MySqlDbType.VarChar, 20, "start1");
+                cmd.Parameters.Add("?in_start2", MySqlDbType.VarChar, 20, "start2");
+
+
+
+                daStartovka.UpdateCommand = cmd;
+
+                daStartovka.Fill(dataStartovka);
+                grdStartovka.AutoGenerateColumns = false;
+                grdStartovka.DataSource = dataStartovka;
+                grdStartovka.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+
+                grdStartovka.AutoResizeRows();
+
+            }
+
+            private void RefreshVysledky()
+            {
+                if (conn != null && cmbKategorieVysledky.SelectedValue != null)
+                {
+                    //nacti existujici posadky
+                    MySqlCommand cmd = new MySqlCommand(
+        @"SELECT GROUP_CONCAT(O.jmeno ORDER BY Z.id_zavodnik_disciplina SEPARATOR '\r\n'), D.id_posadky_discipliny AS id,
+    P.nazev, P.startovni_cislo, timefromint(V.start1) AS start1, timefromint(V.start2) AS start2, 
+    timefromint(V.fin1) AS fin1, timefromint(V.fin2) AS fin2, 
+    floor(V.pen1 / 100) AS penalty1, floor(V.pen2 / 100) AS penalty2, 
+    timefromint(V.time1) AS time1, timefromint(V.time2) AS time2, 
+    timefromint(V.best_time) AS best_time, 
+    status1, status2, status, 
+    P.id_kat FROM prubezne_vysledky AS V 
+    LEFT JOIN posadky_discipliny AS D ON V.id_posadky_discipliny = D.id_posadky_discipliny 
+    LEFT JOIN posadky_zavodu AS P  ON D.id_posadky_zavodu = P.id_posadky_zavodu
+    LEFT JOIN zavodnici_discipliny AS Z  ON Z.id_posadky_discipliny = D.id_posadky_discipliny
+    LEFT JOIN vosoby2 AS O ON O.id = Z.id_zavodnika
+    WHERE (?vse = 1 OR P.id_kat = ?kat) AND P.id_zavodu = ?zavod AND D.id_discipliny = ?disc GROUP BY D.id_posadky_discipliny  ORDER BY id_kat, P.startovni_cislo", conn);
+                    cmd.Parameters.AddWithValue("zavod", AZ.Zavod);
+                    cmd.Parameters.AddWithValue("kat", cmbKategorieVysledky.SelectedValue);
+                    cmd.Parameters.AddWithValue("disc", cmbVysledkyDiscipliny.SelectedValue);
+                    cmd.Parameters.AddWithValue("vse", checkBox2.Checked ? 1 : 0 );
+                    dataVysledky = new DataTable();
+                    daVysledky = new MySqlDataAdapter(cmd);
+
+                    // Create the UpdateCommand.
+                    cmd = new MySqlCommand("ins_end_time", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("?in_id_posadky_discipliny", MySqlDbType.Int32, 11, "id");
+                    cmd.Parameters.Add("?in_fin1", MySqlDbType.VarChar, 20, "fin1");
+                    cmd.Parameters.Add("?in_time1", MySqlDbType.VarChar, 20, "time1");
+                    cmd.Parameters.Add("?in_pen1", MySqlDbType.Int32, 11, "penalty1");
+                    cmd.Parameters.Add("?in_status1", MySqlDbType.Int32, 11, "status1");
+                    cmd.Parameters.Add("?in_fin2", MySqlDbType.VarChar, 20, "fin2");
+                    cmd.Parameters.Add("?in_time2", MySqlDbType.VarChar, 20, "time2");
+                    cmd.Parameters.Add("?in_pen2", MySqlDbType.Int32, 11, "penalty2");
+                    cmd.Parameters.Add("?in_status2", MySqlDbType.Int32, 11, "status2");
+
+                    foreach (MySqlParameter par in cmd.Parameters)
+                    {
+                        par.IsNullable = true;
+                        //par.SourceColumnNullMapping = true;
+                    }
+
+                    daVysledky.UpdateCommand = cmd;
+
+                    daVysledky.Fill(dataVysledky);
+                    grdVysledky.AutoGenerateColumns = false;
+                    grdVysledky.DataSource = dataVysledky;
+                    grdVysledky.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+
+                    grdVysledky.AutoResizeRows();
+                }
+            }
+
+
+            private void RefreshVysledkovka()
+            {
+                if (conn != null)
+                {
+                    //nacti existujici posadky
+                    MySqlCommand cmd = new MySqlCommand("sp_vysledky_zavodu", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+                    cmd.Parameters.AddWithValue("in_kat", cmbKatVysledkovka.SelectedValue);
+                    cmd.ExecuteNonQuery();
+
+                    //cmd = new MySqlCommand("select * from temp", conn);
+                    dataVysledkovka = new DataTable();
+                    daVysledkovka = new MySqlDataAdapter(cmd);
+
+                    daVysledkovka.Fill(dataVysledkovka);
+                    dataVysledkovka.Columns.Remove("id_posadky_zavodu");
+                    grdVysledkovka.DataSource = dataVysledkovka;
+                    grdVysledkovka.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader);
+                    grdVysledkovka.AutoResizeRows();
+
+                    cmd.CommandText = "SELECT MIN(schvaleno) FROM posadky_zavodu AS P LEFT JOIN posadky_discipliny AS D ON D.id_posadky_zavodu = P.id_posadky_zavodu LEFT JOIN uzavrene_vysledky AS V ON V.id_posadky_discipliny = D.id_posadky_discipliny WHERE P.id_zavodu = ?in_id_zavodu AND P.id_kat = ?in_kat GROUP BY P.id_zavodu";
+                    cmd.CommandType = CommandType.Text;
+                    object o = cmd.ExecuteScalar();
+                    if (o != null && !string.IsNullOrEmpty(o.ToString()) && int.Parse(o.ToString()) > 0)
+                    {
+                        lblUzavreni.Text = "Výsledky jsou schválené!";
+                        btnUzavrit.Visible = false;
+                    }
+                    else
+                    {
+                        lblUzavreni.Text = "Výsledky nejsou schválené!";
+                        btnUzavrit.Visible = true;
+                    }
+                }
+
+            }
+
+            private void RefreshExistingPosadky()
+            {
+                if (conn != null)
+                {
+                    //nacti existujici posadky
+                    MySqlCommand cmd = new MySqlCommand("SELECT P.id_posadky_zavodu, P.nazev, count(distinct D.id_discipliny) AS disciplin FROM posadky_zavodu AS P LEFT JOIN posadky_discipliny AS D ON D.id_posadky_zavodu = P.id_posadky_zavodu WHERE P.id_zavodu = ?zavod and P.id_kat = ?kat and P.id_klubu = ?klub GROUP BY P.id_posadky_zavodu", conn);
+                    cmd.Parameters.AddWithValue("zavod", AZ.Zavod);
+                    cmd.Parameters.AddWithValue("kat", cmbKategorie.SelectedValue);
+                    cmd.Parameters.AddWithValue("klub", lstKluby.SelectedValue);
+                    dataPosadky = new DataTable();
+                    daPosadky = new MySqlDataAdapter(cmd);
+                    cb = new MySqlCommandBuilder(daPosadky);
+                    daPosadky.Fill(dataPosadky);
+                    lstPosadky.DisplayMember = "nazev";
+                    lstPosadky.ValueMember = "id_posadky_zavodu";
+                    lstPosadky.DataSource = dataPosadky;
+                }
+            }
+
+
+            private void RefreshPoharovePosadky()
+            {
+                if (conn != null)
+                {
+                    //nacti existujici posadky
+                    MySqlCommand cmd = new MySqlCommand("SELECT id_poharove_posadky AS id, nazev FROM poharove_posadky WHERE id_poharu = ?pohar AND id_kat = ?kat and id_klubu = ?klub", conn);
+                    cmd.Parameters.AddWithValue("pohar", AZ.Sezona);
+                    cmd.Parameters.AddWithValue("kat", cmbKategorie.SelectedValue);
+                    cmd.Parameters.AddWithValue("klub", lstKluby.SelectedValue);
+                    dataPosadkyPohar = new DataTable();
+                    daPosadkyPohar = new MySqlDataAdapter(cmd);
+                    cb = new MySqlCommandBuilder(daPosadkyPohar);
+                    daPosadkyPohar.Fill(dataPosadkyPohar);
+                    lstPoharovePosadky.DisplayMember = "nazev";
+                    lstPoharovePosadky.ValueMember = "id";
+                    lstPoharovePosadky.DataSource = dataPosadkyPohar;
+                }
+            }
+
+
+            private void RefreshRozlosovani()
+            {
+                //nacti existujici posadky
+                MySqlCommand cmd = new MySqlCommand("select * from posadky_zavodu WHERE id_zavodu=?zavod order by id_kat", conn);
+                cmd.Parameters.AddWithValue("zavod", AZ.Zavod);
+                dataRozlosovani = new DataTable();
+                daRozlosovani = new MySqlDataAdapter(cmd);
+                daRozlosovani.FillLoadOption = LoadOption.PreserveChanges;
+                cb = new MySqlCommandBuilder(daRozlosovani);
+                daRozlosovani.Fill(dataRozlosovani);
+                grdRozlosovani.AutoGenerateColumns = false;
+                grdRozlosovani.DataSource = dataRozlosovani;
+                grdRozlosovani.AutoResizeColumns();
+                
+            }
+
+
+            private void RefreshZavodnici()
+            {
+                //nacti existujici posadky
+                dataZavodnici = new DataTable();
+                MySqlCommand cmd = null;
+                if (chckNova.Checked)
+                {
+                    txtNazev.Text = "";
+                    txtNazev.ReadOnly = false;
+                    dataZavodnici.Columns.Add("jmeno");
+                    dataZavodnici.Columns.Add("id");
+                    dataZavodnici.Columns.Add("barva");
+                }
+                else
+                {
+                    bool nic = true;
+                    if (chckPoharova.Checked && lstPoharovePosadky.SelectedIndex > -1)
+                    {
+                        //cmd = new MySqlCommand("SELECT Z.jmeno, Z.id, 'green' as barva FROM poharove_posadky AS P LEFT JOIN vosoby AS Z ON (Z.id = P.zav1 OR Z.id = P.zav2 OR Z.id = P.zav3 OR Z.id = P.zav4 OR Z.id = P.zav5) WHERE P.id_poharove_posadky = ?posadka", conn);
+                        cmd = new MySqlCommand("SELECT Z.jmeno, Z.id, 'green' as barva FROM zavodnici_poharu AS D LEFT JOIN poharove_posadky AS P ON D.id_poharove_posadky = P.id_poharove_posadky            LEFT JOIN vosoby AS Z ON Z.id = D.id_zavodnika WHERE P.id_poharove_posadky = ?posadka GROUP BY D.id_zavodnika", conn);
+                        cmd.Parameters.AddWithValue("posadka", lstPoharovePosadky.SelectedValue);
+                        txtNazev.Text = dataPosadkyPohar.DefaultView[lstPoharovePosadky.SelectedIndex]["nazev"].ToString();
+                        txtNazev.ReadOnly = true;
+                    }
+                    else if (chckExistujici.Checked && lstPosadky.SelectedIndex > -1)
+                    {
+                        cmd = new MySqlCommand("SELECT Z.jmeno, Z.id, 'black' as barva FROM zavodnici_discipliny AS D LEFT JOIN posadky_discipliny AS P  ON D.id_posadky_discipliny = P.id_posadky_discipliny LEFT JOIN vosoby AS Z ON Z.id = D.id_zavodnika WHERE P.id_posadky_zavodu = ?posadka GROUP BY D.id_zavodnika", conn);
+                        cmd.Parameters.AddWithValue("posadka", lstPosadky.SelectedValue);
+                        txtNazev.Text = dataPosadky.DefaultView[lstPosadky.SelectedIndex]["nazev"].ToString();
+                        txtNazev.ReadOnly = true;
+                    }
+                    else
+                    {
+                        nic = false;
+                    }
+                    if (nic)
+                    {
+                        daZavodnici = new MySqlDataAdapter(cmd);
+                        cb = new MySqlCommandBuilder(daZavodnici);
+                        daZavodnici.Fill(dataZavodnici);
+                    }
+                }
+                lstZavodnici.DisplayMember = "jmeno";
+                lstZavodnici.ValueMember = "id";
+                lstZavodnici.DataSource = dataZavodnici;
+            }
+
+        #endregion
+
+    //nasleduji regiony pro jednotlive zalozky
+
+    #region vyber sezony
+
+        private void btnCreatePohar_Click(object sender, EventArgs e)
+        {
+            frmNewPohar f = new frmNewPohar();
+            if (f.ShowDialog() == DialogResult.OK)
+            {
+                MySqlCommand cmd = conn.CreateCommand();
+                cmd.CommandText = "INSERT INTO cis_poharu (nazev, rok) VALUES (@nazev, @rok);";
+                cmd.Parameters.AddWithValue("nazev", f.txtNazev.Text);
+                cmd.Parameters.AddWithValue("rok", f.txtRocnik.Text);
+                cmd.ExecuteNonQuery();
+                // cmd.LastInsertedId
+            }
+
+        }
+        private void cmbSezona_Validated(object sender, EventArgs e)
+        {
+            Common.SetPohar(int.Parse(cmbSezona.SelectedValue.ToString()));
+        }
+        #endregion
+
+
+    #region zadavani zavodu
+        //kontrola spravne vyplnenych udaju o zavodu
+        private void grdZavody_RowValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                da.Update(data2);
+            }
+            catch
+            {
+                MessageBox.Show("Nìkteré pole máte asi vyplnìné špatnì!", "Chyba ukládání záznamu do DB", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
+        private void grdDiscipliny_RowValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            daDisc.Update(dataDiscipliny);
+        }
+
+   #endregion
+
+    #region zadavani posadek
+        //barevne odlisovani v listboxu posadek
+        private void lstPosadky_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            // Draw the background of the ListBox control for each item.
+            // Create a new Brush and initialize to a Black colored brush
+            // by default.
+            //
+            e.DrawBackground();
+            Brush myBrush = Brushes.Black;
+            //
+            // Determine the color of the brush to draw each item based on 
+            // the index of the item to draw.
+            //
+            if (e.Index >= 0)
+            {
+                if (int.Parse(dataPosadky.DefaultView[e.Index]["disciplin"].ToString()) < 3)
+                {   //TODO: DODELAT pocet disciplin!!
+                    myBrush = Brushes.Red;
+                }
+
+                //
+                // Draw the current item text based on the current 
+                // Font and the custom brush settings.
+                //
+                e.Graphics.DrawString(dataPosadky.DefaultView[e.Index]["nazev"].ToString(),
+                    e.Font, myBrush, e.Bounds, StringFormat.GenericDefault);
+            }
+            //
+            // If the ListBox has focus, draw a focus rectangle 
+            // around the selected item.
+            //
+            e.DrawFocusRectangle();
+        }
+
+
+        //reakce na stisk enteru v zadavani zavodnika - prida ho to do listu
+        private void txtNewZavodnik_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                string[] casti = txtNewZavodnik.Text.Split(new char[] { '|' });
+                int id;
+                if (casti.Length == 2 && int.TryParse(casti[1], out id))
+                {
+                    int[] ind = new int[lstZavodnici.SelectedIndices.Count];
+                    lstZavodnici.SelectedIndices.CopyTo(ind, 0);
+                    dataZavodnici.Rows.Add(casti[0], id, "black");
+                    lstZavodnici.SetSelected(lstZavodnici.Items.Count - 1, true);
+                    foreach (int i in ind)
+                    {
+                        lstZavodnici.SetSelected(i, true);
+                    }
+                    txtNewZavodnik.Text = "";
+                }
+                else
+                {
+                    frmNewOsoba f = new frmNewOsoba(txtNewZavodnik.Text, int.Parse(lstKluby.SelectedValue.ToString()));
+                    if (f.ShowDialog() == DialogResult.OK)
+                    {
+                        //prida osobu ddo db
+                        MySqlCommand cmd = new MySqlCommand("INSERT INTO cis_osob (jmeno, prijmeni, id_klubu, rocnik, rozhodci) VALUES (?j, ?p, ?k, ?roc, ?roz);", conn);
+                        cmd.Parameters.AddWithValue("j", f.Jmeno);
+                        cmd.Parameters.AddWithValue("p", f.Prijmeni);
+                        cmd.Parameters.AddWithValue("k", f.Klub);
+                        cmd.Parameters.AddWithValue("roc", f.Rocnik);
+                        cmd.Parameters.AddWithValue("roz", f.Rozhodci ? 1 : 0);
+                        cmd.ExecuteNonQuery();
+                        int[] ind = new int[lstZavodnici.SelectedIndices.Count];
+                        lstZavodnici.SelectedIndices.CopyTo(ind, 0);
+                        dataZavodnici.Rows.Add(f.Prijmeni + " " + f.Jmeno, cmd.LastInsertedId, "black");
+                        lstZavodnici.SetSelected(lstZavodnici.Items.Count - 1, true);
+                        foreach (int i in ind)
+                        {
+                            lstZavodnici.SetSelected(i, true);
+                        }
+                        txtNewZavodnik.Text = "";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nepovedlo se pøidat osobu - nelze zparsovat ID a nevytvoøili jste novou!", "Chyba pøidání závodníka", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                }
+            }
+        }
+
+        //scitani poctu vybranych lidi do posadky
+        private void lstZavodnici_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int i = lstZavodnici.SelectedItems.Count;
+            lblVybranychLidi.Text = string.Format("Vybráno {0} závodníkù.", i);
+            if (i < 4) lblVybranychLidi.ForeColor = Color.Red;
+            else if (i > 5) lblVybranychLidi.ForeColor = Color.Red;
+            else lblVybranychLidi.ForeColor = Color.Black;
+        }
+        
+        private void tPosadky_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        //obsluha posadek a jejich radioboxu - zaskrtavani pri kliku na dany list
+        private void lstPosadky_Click(object sender, EventArgs e)
+        {
+            chckExistujici.Checked = true;
+        }
+
+        private void lstPoharovePosadky_Click(object sender, EventArgs e)
+        {
+            chckPoharova.Checked = true;
+        }
+
+        private void chckNova_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chckNova.Checked) //vyprazdni lidi
+                RefreshZavodnici();
+        }
+
+        
+
+
+       //vykresleni posadky v listboxu - zobrazuje je to barevne
+        private void lstZavodnici_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            // Draw the background of the ListBox control for each item.
+            // Create a new Brush and initialize to a Black colored brush
+            // by default.
+            //
+            e.DrawBackground();
+            Brush myBrush = Brushes.Black;
+            //
+            // Determine the color of the brush to draw each item based on 
+            // the index of the item to draw.
+            //
+            if (e.Index >= 0)
+            {
+                if (dataZavodnici.DefaultView[e.Index]["barva"].ToString() == "green")
+                {   //TODO: DODELAT pocet disciplin!!
+                    myBrush = Brushes.Red;
+                }
+
+                //
+                // Draw the current item text based on the current 
+                // Font and the custom brush settings.
+                //
+                e.Graphics.DrawString(dataZavodnici.DefaultView[e.Index]["jmeno"].ToString(),
+                    e.Font, myBrush, e.Bounds, StringFormat.GenericDefault);
+            }
+            //
+            // If the ListBox has focus, draw a focus rectangle 
+            // around the selected item.
+            //
+            e.DrawFocusRectangle();
+        }
+
+
+        //pridani posadky do zavodu
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if ((lstZavodnici.SelectedItems.Count >= 4 && lstZavodnici.SelectedItems.Count <= 5) || chckOverrideCountZavodniku.Checked)
+            {
+                if (!string.IsNullOrEmpty(txtNazev.Text))
+                {
+                    MySqlCommand cmd = null;
+                    
+                    int i;
+                    cmd = new MySqlCommand();
+                    cmd.Connection = conn;
+                    cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+                    cmd.Parameters.AddWithValue("in_id_pohar", AZ.Sezona);
+                    cmd.Parameters.AddWithValue("in_nazev", txtNazev.Text);
+                    cmd.Parameters.AddWithValue("in_id_kat", cmbKategorie.SelectedValue);
+                    cmd.Parameters.AddWithValue("in_id_klubu", lstKluby.SelectedValue);
+                    cmd.Parameters.AddWithValue("in_id_discipliny", 0);
+                    //pøidám závodníky
+                    for (i = 0; i < 5; i++)
+                    {
+                        if (i < lstZavodnici.SelectedItems.Count)
+                            cmd.Parameters.AddWithValue(string.Format("in_zav{0}", i + 1), dataZavodnici.DefaultView[lstZavodnici.SelectedIndices[i]]["id"]);
+                        else
+                            cmd.Parameters.AddWithValue(string.Format("in_zav{0}", i + 1), 0);
+                    }
+
+                    if (int.Parse(((Button)sender).Tag.ToString()) < 2)
+                    {
+                        //pøidávám do závodu
+                        cmd.CommandText = "up_posadka_zavodu_ins";
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        for (i = 0; i < lstDisciplinyPosadky.SelectedItems.Count; i++)
+                        {
+                            cmd.Parameters["in_id_discipliny"].Value = dataDiscipliny.DefaultView[lstDisciplinyPosadky.SelectedIndices[i]]["id_discipliny"];
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    if (int.Parse(((Button)sender).Tag.ToString()) > 0)
+                    {
+                        //pøidávám do poháru
+                        cmd.CommandText = "up_posadka_poharu_ins";
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.ExecuteNonQuery();
+
+                        RefreshPoharovePosadky();
+                        MessageBox.Show("Pohárová posádka vytvoøena", "Hlášení", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    }
+
+                    RefreshExistingPosadky();
+                    
+                }
+                else
+                {
+                    MessageBox.Show("Posádka musí mít název!", "To je proti pravidlùm!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Tolik èlenù nemùže posádka mít", "To je proti pravidlùm!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+   #endregion
+
+    #region rozlosovani
+
+        //vygenerovani startovnich cisel
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //losování
+            int max = 0;
+            string kat = cmbKatRozlosovani.SelectedValue.ToString();
+            foreach (DataRow row in dataRozlosovani.Rows)
+                if (row["id_kat"].ToString() == kat) max++;
+            string[] strCisla = txtRozlosovaniCisla.Text.Split(new char[] { ',' });
+            int[] cisla = new int[max];
+            int last = 0;
+            int i2 = 0;
+            for (int i = 0; i < max; i++)
+            {
+                if (strCisla.Length > i2)
+                {
+                    while(!int.TryParse(strCisla[i2], out last))
+                    {
+                        i2++;
+                        if (strCisla.Length == i2) break;
+                    }                    
+                    i2++;
+                }
+                else
+                {
+                    last++;
+                }
+                cisla[i] = last;
+            }
+            Randomize(cisla);
+            i2 = -1;
+            foreach (DataRow row in dataRozlosovani.Rows)
+                if (row["id_kat"].ToString() == kat) row["startovni_cislo"] = cisla[++i2];
+            //ok, rozlosovano
+            button3_Click(sender, e);  //ulozim
+            //last++;
+            
+            txtRozlosovaniCisla.Text = ((Math.Floor((decimal)(last / 10)) + 1) * 10 + 1).ToString();
+            txtRozlosovaniCisla.Focus();
+
+            if (cmbKatRozlosovani.SelectedIndex != cmbKatRozlosovani.Items.Count - 1)
+            {
+                cmbKatRozlosovani.SelectedIndex++;
+            }
+            
+        }
+
+
+        //rozhazeni listu
+        static void Randomize(IList list)
+        {
+            Random rng = new Random();
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int swapIndex = rng.Next(i + 1);
+                if (swapIndex != i)
+                {
+                    object tmp = list[swapIndex];
+                    list[swapIndex] = list[i];
+                    list[i] = tmp;
+                }
+            }
+        }
+
+        //ulozeni rucnich zmen v rozlosovani
+        private void button3_Click(object sender, EventArgs e)
+        {
+            DataTable changes = dataRozlosovani.GetChanges();
+            if (changes != null)
+            {
+                daRozlosovani.Update(changes);
+                dataRozlosovani.AcceptChanges();
+            }
+        }
+    #endregion
+
+    #region startovka
+        //ulozeni rucnich zmen ve startovce
+        private void button4_Click(object sender, EventArgs e)
+        {
+            DataTable changes = dataStartovka.GetChanges();
+            if (changes != null)
+            {
+                daStartovka.Update(changes);
+                dataStartovka.AcceptChanges();
+            }
+        }
+
+
+        //generuje startovku - ze zadaneho intervalu a startu prvni posadky
+        private void button5_Click(object sender, EventArgs e)
+        {
+            int interval = 0;
+            if (int.TryParse(txtTimeInterval.Text, out interval))
+            {
+                foreach (DataRow row in dataStartovka.Rows)
+                {
+                    if (row["id_kat"].ToString() == cmbKatStartTimes.SelectedValue.ToString())
+                    {
+                        //jo, je to ta kategorie kam doplòuju
+                        string col = "";
+                        if (rb1kolo.Checked)
+                            col = "start1";
+                        else if (rb2kolo.Checked) 
+                            col = "start2";
+                        else
+                        {
+                            MessageBox.Show("Chyba - není zadané, jaké kolo se má generovat!!!");
+                            return;
+                        }
+                        row[col] = txtFromTimeStarts.Text;
+                        txtFromTimeStarts.Text = PridejKCasu(txtFromTimeStarts.Text, interval);
+                    }
+                }
+                try
+                {
+                    cmbKatStartTimes.SelectedIndex++;
+                }
+                catch {
+                    if (rb1kolo.Checked)
+                    {
+                        rb2kolo.Checked = true;
+                        cmbKatStartTimes.SelectedIndex = 0;
+                    }
+                }
+                txtFromTimeStarts.Focus();
+                button4_Click(sender, e);             
+            }
+            else
+            {
+                MessageBox.Show("Interval musí být zadaný! A musí to být èíslo!!");
+            }
+        }
+
+        //fce na scitani casu - pouzite pri generovani startovky
+        private string PridejKCasu(string kcemu, int vterin)
+        {
+            int s = int.Parse(kcemu.Substring(0,2)) * 360000 + 
+                int.Parse(kcemu.Substring(3,2)) * 6000 + 
+                int.Parse(kcemu.Substring(6,2)) * 100 + 
+                int.Parse(kcemu.Substring(9,2)) + vterin * 100;
+            string ret;
+            ret = (s % 100).ToString().PadLeft(2,'0');
+            s = s / 100;
+            ret = (s % 60).ToString().PadLeft(2, '0') + "." + ret;
+            s = s / 60;
+            ret = (s % 60).ToString().PadLeft(2, '0') + ":" + ret;
+            s = s / 60;
+            ret = s.ToString().PadLeft(2, '0') + ":" + ret;
+
+            return ret;
+        }
+
+        
+        //skryvani sloupcu startovky
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            cStartovkaClenoce.Visible = checkBox1.Checked;
+            nazevS.Visible = !checkBox1.Checked;
+            posadkaFull.Visible = checkBox1.Checked;
+            cRocnik.Visible = checkBox1.Checked;
+            cCk.Visible = checkBox1.Checked;
+
+            grdStartovka.AutoResizeRows();
+        }
+     #endregion
+
+    #region obsluha tabulky zadavani vysledku aby byla user friendly a osetreni updatu po zmene radku
+        //logika objevovani sloupecku pri zadavani vysledkovky
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked)
+            {
+                grdVysledky.Columns["maskedTextBoxColumn4"].Visible = true;
+                grdVysledky.Columns["cCil1"].Visible = true;
+                grdVysledky.Columns["cPenalty1"].Visible = true;
+                grdVysledky.Columns["cTime1"].Visible = true;
+                grdVysledky.Columns["cStatus1"].Visible = true;
+                grdVysledky.Columns["maskedTextBoxColumn5"].Visible = true;
+                grdVysledky.Columns["cCil2"].Visible = true;
+                grdVysledky.Columns["cPenalty2"].Visible = true;
+                grdVysledky.Columns["cTime2"].Visible = true;
+                grdVysledky.Columns["cStatus2"].Visible = true;
+            }
+            else if (radioButton2.Checked)
+            {
+                grdVysledky.Columns["maskedTextBoxColumn4"].Visible = true;
+                grdVysledky.Columns["cCil1"].Visible = true;
+                grdVysledky.Columns["cPenalty1"].Visible = true;
+                grdVysledky.Columns["cTime1"].Visible = true;
+                grdVysledky.Columns["cStatus1"].Visible = true;
+                grdVysledky.Columns["maskedTextBoxColumn5"].Visible = false;
+                grdVysledky.Columns["cCil2"].Visible = false;
+                grdVysledky.Columns["cPenalty2"].Visible = false;
+                grdVysledky.Columns["cTime2"].Visible = false;
+                grdVysledky.Columns["cStatus2"].Visible = false;
+            }
+            else if (radioButton3.Checked)
+            {
+                grdVysledky.Columns["maskedTextBoxColumn4"].Visible = false;
+                grdVysledky.Columns["cCil1"].Visible = false;
+                grdVysledky.Columns["cPenalty1"].Visible = false;
+                grdVysledky.Columns["cTime1"].Visible = false;
+                grdVysledky.Columns["cStatus1"].Visible = false;
+                grdVysledky.Columns["maskedTextBoxColumn5"].Visible = true;
+                grdVysledky.Columns["cCil2"].Visible = true;
+                grdVysledky.Columns["cPenalty2"].Visible = true;
+                grdVysledky.Columns["cTime2"].Visible = true;
+                grdVysledky.Columns["cStatus2"].Visible = true;
+            }
+        }
+
+        private void rbCilovy_CheckedChanged(object sender, EventArgs e)
+        {
+            DataGridViewCellStyle dg1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dg2 = new DataGridViewCellStyle();
+
+            dg1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(224)))), ((int)(((byte)(192)))));
+            dg1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+
+            dg2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            dg2.SelectionBackColor = System.Drawing.Color.Yellow;
+            dg2.SelectionForeColor = System.Drawing.Color.Black;
+
+            //zmena z ciloveho na startovni
+            if (rbCilovy.Checked)
+            {
+                grdVysledky.Columns["cCil1"].ReadOnly = false;
+                grdVysledky.Columns["cCil1"].DefaultCellStyle = dg1;
+                grdVysledky.Columns["cTime1"].ReadOnly = true;
+                grdVysledky.Columns["cTime1"].DefaultCellStyle = null;
+
+                grdVysledky.Columns["cCil2"].ReadOnly = false;
+                grdVysledky.Columns["cCil2"].DefaultCellStyle = dg2;
+                grdVysledky.Columns["cTime2"].ReadOnly = true;
+                grdVysledky.Columns["cTime2"].DefaultCellStyle = null;
+            }
+            else if (rbZavodu.Checked)
+            {
+                grdVysledky.Columns["cCil1"].ReadOnly = true;
+                grdVysledky.Columns["cCil1"].DefaultCellStyle = null;
+                grdVysledky.Columns["cTime1"].ReadOnly = false;
+                grdVysledky.Columns["cTime1"].DefaultCellStyle = dg1;
+
+                grdVysledky.Columns["cCil2"].ReadOnly = true;
+                grdVysledky.Columns["cCil2"].DefaultCellStyle = null;
+                grdVysledky.Columns["cTime2"].ReadOnly = false;
+                grdVysledky.Columns["cTime2"].DefaultCellStyle = dg2;
+            }
+        }
+
+        //toto umoznuje aby pri stisku sipky dolu zustal v gridu vybrana stejna bunka i po refreshi dat z db
+        private void grdVysledky_RowEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (LastColVysledky >= 0 && grdVysledky.CurrentRow != null)
+            {
+                foreach (DataGridViewCell cel in grdVysledky.SelectedCells)
+                    cel.Selected = false;
+                grdVysledky[LastColVysledky, e.RowIndex].Selected = true;
+                for (int i = 1; i < LastColVysledky; i++)
+                    SendKeys.Send("{tab}");
+                LastColVysledky = -1;
+            }
+        }
+
+        //volani slozitejsiho updatu - dopocitani zbyleho casu a vysledneho casu pri zmene bunky
+        private void grdVysledky_RowValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            DataTable changes = dataVysledky.GetChanges();
+            if (changes != null)
+            {
+                foreach (DataRow row in changes.Rows)
+                {
+                    if (row.RowState == DataRowState.Modified)
+                    {
+                        if (grdVysledky.Columns["cTime1"].ReadOnly && row["fin1"] != DBNull.Value) row["time1"] = "00:00:00.00";
+                        if (grdVysledky.Columns["cTime2"].ReadOnly && row["fin2"] != DBNull.Value) row["time2"] = "00:00:00.00";
+                        if (grdVysledky.Columns["cCil1"].ReadOnly && row["time1"] != DBNull.Value) row["fin1"] = "00:00:00.00";
+                        if (grdVysledky.Columns["cCil2"].ReadOnly && row["time2"] != DBNull.Value) row["fin2"] = "00:00:00.00";
+                    }
+                }
+                daVysledky.Update(changes);
+                dataVysledky.AcceptChanges();
+
+                MySqlCommand cmd = new MySqlCommand("up_tr_prepocitej_vysledky", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+                cmd.Parameters.AddWithValue("in_id_discipliny", cmbVysledkyDiscipliny.SelectedValue);
+                cmd.Parameters.AddWithValue("in_id_kat", cmbKategorieVysledky.SelectedValue);
+                cmd.ExecuteNonQuery();
+                if (e != null) //jestli to nevolam ja, ale vola se to samo
+                {
+                    LastColVysledky = e.ColumnIndex;
+                    if (radioButton3.Checked) LastColVysledky -= 5;
+                }
+                dataVysledky.Clear();
+                daVysledky.Fill(dataVysledky);
+            }
+        }
+
+
+        private void grdVysledky_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            //zatim nepouzito
+        }
+
+    #endregion
+
+
+        //uzavreni vysledku a presun na tab ze zobrazenou vysledkovkou
+        private void button9_Click(object sender, EventArgs e)
+        {
+
+            MySqlCommand cmd = new MySqlCommand("up_uzavreni_vysledku", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+            cmd.Parameters.AddWithValue("in_id_discipliny", cmbVysledkyDiscipliny.SelectedValue);
+            cmd.Parameters.AddWithValue("in_id_kat", cmbKategorieVysledky.SelectedValue);
+            cmd.ExecuteNonQuery();
+            tabControl1.SelectedIndex++;
+        }
+
+        //uzavre vysledky - pak uz nejdou menit
+        private void btnUzavrit_Click(object sender, EventArgs e)
+        {
+            MySqlCommand cmd = new MySqlCommand("UPDATE posadky_zavodu AS P LEFT JOIN posadky_discipliny AS D ON D.id_posadky_zavodu = P.id_posadky_zavodu LEFT JOIN uzavrene_vysledky AS V ON V.id_posadky_discipliny = D.id_posadky_discipliny SET schvaleno = 1 WHERE P.id_zavodu = ?in_id_zavodu AND P.id_kat = ?in_kat", conn);
+            cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+            cmd.Parameters.AddWithValue("in_kat", cmbKatVysledkovka.SelectedValue);
+            cmd.ExecuteNonQuery();
+            RefreshVysledkovka();
+        }
+
+    #region ciselniky
+        private void tables_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            dataCiselniky = new DataTable();
+
+            daCiselniky = new MySqlDataAdapter("SELECT * FROM " + tables.SelectedItem.ToString(), conn);
+
+            cb = new MySqlCommandBuilder(daCiselniky);
+
+            daCiselniky.Fill(dataCiselniky);
+
+            dataGrid.DataSource = dataCiselniky;
+        }
+
+
+
+        private void updateBtn_Click(object sender, System.EventArgs e)
+        {
+            DataTable changes = dataCiselniky.GetChanges();
+            daCiselniky.Update(changes);
+            dataCiselniky.AcceptChanges();
+        }
+
+        #endregion
+
+
+    #region refreshe tabulek pri zmene radku
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            RefreshVysledky();
+        }
+
+        private void cmbSezona_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            AZ.Refresh();
+        }
+        private void grdZavody_SelectionChanged(object sender, EventArgs e)
+        {
+            AZ.Refresh();
+            GetDiscipliny();
+        }
+
+
+        private void lstKluby_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            RefreshExistingPosadky();
+            RefreshPoharovePosadky();
+        }
+
+        private void cmbKategorie_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshExistingPosadky();
+            RefreshPoharovePosadky();
+        }
+        private void lstPosadky_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshZavodnici();
+        }
+
+        private void lstPoharovePosadky_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshZavodnici();
+        }
+        private void cmbKatVysledkovka_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshVysledkovka();
+        }
+
+        private void cmbStartovkaDiscipliny_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshStartovka();
+        }
+        private void cmbVysledkyDiscipliny_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshVysledky();
+        }
+        #endregion
+
+
+
+        //vylepsuje chovani textboxu pri focusu
+        private void txtTimeInterval_Enter(object sender, EventArgs e)
+        {
+            this.BeginInvoke(new SetMaskedTextBoxSelectAllDelegate(SetMaskedTextBoxSelectAll), new object[] { (MaskedTextBox)sender });
+        }
+
+        //vylepsuje chovani MaskedBoxu pri focusu
+        private delegate void SetMaskedTextBoxSelectAllDelegate(MaskedTextBox txtbox);
+
+        private void SetMaskedTextBoxSelectAll(MaskedTextBox txtbox)
+        {
+            txtTimeInterval.SelectAll();
+        }
+
+
+        #region tisky tabulek
+        //tisk vysledku
+        private void button10_Click(object sender, EventArgs e)
+        {
+            PrintDGV.Print_DataGridView(grdVysledky, string.Format("Prùbìžné výsledky - {1} - {2}", AZ.strZavod, cmbVysledkyDiscipliny.Text, cmbKategorieVysledky.Text));
+        }
+
+        //tisk vysledku  celkove
+        private void button7_Click(object sender, EventArgs e)
+        {
+            PrintDGV.Print_DataGridView(grdVysledkovka, string.Format("Výsledky závodu {0} - kategorie {1}", AZ.strZavod, cmbKatVysledkovka.Text), true);
+        }
+
+        //tisk startovky
+        private void button6_Click(object sender, EventArgs e)
+        {
+            PrintDGV.Print_DataGridView(grdStartovka, string.Format("{0} - startovní listina - {1}", AZ.strZavod, cmbStartovkaDiscipliny.Text), false);
+        }
+        #endregion
+
+
+        #region exportovaci funkce do xlsx
+
+        //export vysledku do excelu
+            private void button11_Click(object sender, EventArgs e)
+            {
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                    ExportExcel.Excel(dataVysledkovka, cmbKatVysledkovka.Text, saveFileDialog1.FileName);
+            }
+
+
+            //export vysledku na diplomy
+            private void button12_Click(object sender, EventArgs e)
+            {
+                //nacti existujici posadky
+                MySqlCommand cmd = new MySqlCommand("sp_vysledky_diplomy", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("in_id_zavodu", AZ.Zavod);
+                cmd.ExecuteNonQuery();
+
+                DataTable NaDiplomy = new DataTable();
+                MySqlDataAdapter daDiplomy = new MySqlDataAdapter(cmd);
+
+                daDiplomy.Fill(NaDiplomy);
+                
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                    ExportExcel.Diplomy(NaDiplomy, saveFileDialog1.FileName);
+            }
+
+            //export startovni listiny do excelu
+            private void button13_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                ExportExcel.Diplomy(dataStartovka, saveFileDialog1.FileName);
+        }
+        #endregion
+
+
+
+        //
+        //doplnoove funkce
+        //
+
+
+        //importovani externiho souboru
+        private void button14_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                FileInfo f = new FileInfo(openFileDialog1.FileName);
+                StreamReader r = f.OpenText();
+                List<Casomira> lc = new List<Casomira>();
+                while (!r.EndOfStream)
+                {
+                    string radka = r.ReadLine();
+                    Casomira c = new Casomira(radka);
+                    lc.Insert(c.C, c);
+                }
+                //mam to v lc
+                bool penalty = (MessageBox.Show("Jsou to penalty?", "Dotaz", MessageBoxButtons.YesNo) == DialogResult.Yes);
+                bool startcil = false;
+                if (!penalty)
+                    startcil = (MessageBox.Show("Doplnit z èasù start i cíl?", "Dotaz", MessageBoxButtons.YesNo) == DialogResult.Yes);
+                string postfix = "";
+                if (radioButton2.Checked) //prvni kolo
+                {
+                    postfix = "1";
+                }
+                else if (radioButton3.Checked) //druhe kolo
+                {
+                    postfix = "2";
+                }
+                else //obe kola
+                {
+                    throw new Exception();
+                }
+                //a jdu to doplnit
+                foreach (DataRow row in dataVysledky.Rows)
+                {
+                    Casomira c = lc[int.Parse(row["startovni_cislo"].ToString())];
+                    if (c != null)
+                    {
+                       
+                        if (penalty)
+                        {
+                            row["penalty" + postfix] = int.Parse(c.Cas2);
+                        }
+                        else //jsou to casy
+                        {
+                            if (startcil)
+                            {
+                                row["start" + postfix] = c.Cas1;
+                                row["fin" + postfix] = c.Cas2;
+                            }
+                            else
+                            {
+                                row["time" + postfix] = c.Cas2;
+                            }
+                        }
+
+
+                    }
+                }
+
+                //grdVysledky_RowValidated(sender, null);
+                daVysledky.Update(dataVysledky);
+               
+                
+            }
+        }
+
+        //export provedenych zmeny - pomoci volani externi aplikace mysqldump
+        private void button16_Click(object sender, EventArgs e)
+        {
+
+            // Application path and command line arguments
+            string[] tables = new string[] 
+            { 
+                "zavodnici_poharu -w \"id_poharove_posadky in (SELECT id_poharove_posadky FROM poharove_posadky WHERE dirty = 1)\"",
+                "poharove_posadky -w \"dirty = 1\"",
+                "cis_klubu -w \"dirty = 1\"",
+                "cis_osob -w \"dirty = 1\"",
+                "cis_poharu -w \"dirty = 1\"",
+
+                "zavod -w \"dirty = 1\"",
+                "discipliny_zavodu -w \"id_zavodu in (SELECT id_zavodu FROM zavod WHERE dirty = 1)\"",
+                "posadky_zavodu -w \"id_zavodu in (SELECT id_zavodu FROM zavod WHERE dirty = 1)\"",
+                "posadky_discipliny -w \"id_posadky_zavodu in (SELECT id_posadky_zavodu FROM posadky_zavodu AS P LEFT JOIN zavod AS Z ON Z.id_zavodu = P.id_zavodu WHERE Z.dirty = 1)\"",
+                "uzavrene_vysledky -w \"id_posadky_discipliny in (SELECT id_posadky_discipliny FROM posadky_discipliny AS D LEFT JOIN posadky_zavodu AS P ON P.id_posadky_zavodu = D.id_posadky_zavodu LEFT JOIN zavod AS Z ON Z.id_zavodu = P.id_zavodu WHERE Z.dirty = 1)\"",
+                "zavodnici_discipliny -w \"id_posadky_discipliny in (SELECT id_posadky_discipliny FROM posadky_discipliny AS D LEFT JOIN posadky_zavodu AS P ON P.id_posadky_zavodu = D.id_posadky_zavodu LEFT JOIN zavod AS Z ON Z.id_zavodu = P.id_zavodu WHERE Z.dirty = 1)\""
+            };
+            string ApplicationPath = Common.MysqldumpPath;
+            string[] parseCS = conn.ConnectionString.Split(new char[] { ';' });
+            string user = "";
+            string pass = "";
+            foreach (string s in parseCS)
+            {
+                if      (s.ToLower().StartsWith("user id=")) user = s.Substring(8).Trim(new char[] {'"'});
+                else if (s.ToLower().StartsWith("password=")) pass = s.Substring(9).Trim(new char[] { '"' });
+            }
+            string ApplicationArguments = conn.Database + " --u " + user + " -p\"" + pass + "\" --table {0} -t -O lock-tables=FALSE -O add-locks=FALSE -O disable-keys=FALSE --compact --replace --skip-triggers";
+            //ApplicationArguments = conn.Database + " --u " + user + " -p\"" + pass + "\" --table zavodnici_poharu --compact -t -O lock-tables=FALSE -O add-locks=FALSE -O disable-keys=FALSE";
+
+            string Result = "";
+            // Create a new process object
+            Process ProcessObj = new Process();
+
+            // StartInfo contains the startup information of
+            // the new process
+            
+            //ProcessObj.StartInfo.Arguments = ApplicationArguments;
+            ProcessObj.StartInfo.FileName = ApplicationPath;
+
+            // These two optional flags ensure that no DOS window
+            // appears
+            ProcessObj.StartInfo.UseShellExecute = false;
+            ProcessObj.StartInfo.CreateNoWindow = true;
+
+            // If this option is set the DOS window appears again :-/
+            // ProcessObj.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            // This ensures that you get the output from the DOS application
+            ProcessObj.StartInfo.RedirectStandardOutput = true;
+
+            // Start the process
+            foreach (string t in tables)
+            {
+                ProcessObj.StartInfo.Arguments = string.Format(ApplicationArguments, t);
+                ProcessObj.Start();
+                while (!ProcessObj.StandardOutput.EndOfStream)
+                {
+                    Result += ProcessObj.StandardOutput.ReadLine() + "\n";
+                }
+                // Wait that the process exits
+                ProcessObj.WaitForExit();
+            }
+            
+
+            // Now read the output of the DOS application
+            //string Result = ProcessObj.StandardOutput.ReadToEnd();
+            txtExport.Text = Encoding.UTF8.GetString(Encoding.Default.GetBytes(Result));
+
+            MySqlCommand cmd = new MySqlCommand("sp_set_clean", conn);
+            cmd.CommandType = CommandType.StoredProcedure; 
+            cmd.ExecuteNonQuery();
+            
+        }
+
+
+        //exportovani dat na web - komunikace pres WebRequest
+        private void button17_Click(object sender, EventArgs e)
+        {
+            string strName = txtUser.Text;
+            string strPass = txtPassword.Text;
+
+            ASCIIEncoding encoding = new ASCIIEncoding();
+            string postData = "userid=" + strName;
+            postData += ("&pass=" + strPass);
+            postData += ("&sql=" + System.Web.HttpUtility.UrlEncode(txtExport.Text));
+            byte[] data = encoding.GetBytes(postData);
+
+            // Prepare web request...
+            HttpWebRequest myRequest =
+              (HttpWebRequest)WebRequest.Create("http://www.svazvodaku.cz/import.php");
+            myRequest.Method = "POST";
+            myRequest.ContentType = "application/x-www-form-urlencoded";
+            myRequest.ContentLength = data.Length;
+            Stream newStream = myRequest.GetRequestStream();
+            // Send the data.
+            newStream.Write(data, 0, data.Length);
+            newStream.Close();
+
+            WebResponse resp = myRequest.GetResponse();
+            StreamReader rdr =
+            new StreamReader(resp.GetResponseStream(),  Encoding.UTF8);
+            string lcHtml = rdr.ReadToEnd();
+            rdr.Close();
+
+            MessageBox.Show(lcHtml);
+        }
+
+
+
+
+
+        //
+        //       pouzite tridy a struktury
+        //
+
+
+        //struktura pouzita k ulozeni prave aktivniho zavodu
+        public class ActualZavod
+        {
+            private int sezona = 0;
+            private int zavod = 0;
+            private bool enable = false;
+            public string strZavod;
+            public string strSezona;
+
+            public Form1 f;
+
+            public ActualZavod(Form1 InitialForm)
+            {
+                f = InitialForm;
+            }
+
+            public void Refresh()
+            {
+                sezona = int.Parse(f.cmbSezona.SelectedValue.ToString());
+                strSezona = f.data.DefaultView[f.cmbSezona.SelectedIndex]["nazev"].ToString();
+
+                if (f.grdZavody.CurrentRow != null)
+                {
+                    if (f.data2.DefaultView[f.grdZavody.CurrentRow.Index].IsNew)
+                    {
+                        zavod = 0;
+                    }
+                    else
+                    {
+                        if (!int.TryParse(f.data2.DefaultView[f.grdZavody.CurrentRow.Index]["id_zavodu"].ToString(), out zavod))
+                        {
+                            zavod = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    zavod = 0;
+                }
+
+                if (zavod != 0)
+                {
+                    strZavod = f.data2.DefaultView[f.grdZavody.CurrentRow.Index]["nazev"].ToString();
+                    enable = int.Parse(f.data2.DefaultView[f.grdZavody.CurrentRow.Index]["dirty"].ToString()) == 1;
+
+                    f.GetDiscipliny();
+                }
+
+                Common.LastZavod = zavod;
+                SetHeader();
+
+
+            }
+
+            private void SetHeader()
+            {
+                f.lblSelected.Text = string.Format("{0} -> {1}", strSezona, strZavod);
+                if (enable)
+                {
+                    if (!f.tabControl1.TabPages.Contains(f.tPosadky))
+                    {
+                        //neobsahuje zadny
+                        f.tabControl1.TabPages.Remove(f.tExport);
+                        f.tabControl1.TabPages.Remove(f.tCiselniky);
+                        f.tabControl1.TabPages.Add(f.tPosadky);
+                        f.tabControl1.TabPages.Add(f.tRozlosovani);
+                        f.tabControl1.TabPages.Add(f.tStartovka);
+                        f.tabControl1.TabPages.Add(f.tVysledky);
+                        f.tabControl1.TabPages.Add(f.tVysledkovka);
+                        f.tabControl1.TabPages.Add(f.tExport);
+                        f.tabControl1.TabPages.Add(f.tCiselniky);
+                    }
+                }
+                else //maj bejt skryty
+                {
+                    if (f.tabControl1.TabPages.Contains(f.tPosadky))
+                    {
+                        //neobsahuje zadny
+                        f.tabControl1.TabPages.Remove(f.tPosadky);
+                        f.tabControl1.TabPages.Remove(f.tRozlosovani);
+                        f.tabControl1.TabPages.Remove(f.tStartovka);
+                        f.tabControl1.TabPages.Remove(f.tVysledky);
+                        f.tabControl1.TabPages.Remove(f.tVysledkovka);
+
+                    }
+                }
+            }
+
+
+            public int Sezona
+            {
+                get { return sezona; }
+            }
+
+            public int Zavod
+            {
+                get { return zavod; }
+            }
+
+            public bool EnabledAllTabs
+            {
+                get { return enable; }
+            }
+
+        }
+
+        //pomocna struktura na parsovani dat z externiho textaku
+        private class Casomira
+        {
+            private int c1;
+            private int c2;
+            private string cas1;
+            private string cas2;
+
+            public Casomira(string radka)
+            {
+                string[] p = radka.Split(new char[] { '\t' });
+                c1 = int.Parse(p[0]);
+                c2 = int.Parse(p[2]);
+                cas1 = p[1].Replace(",", ".");
+                cas2 = p[3].Replace(",", ".");
+                if (c1 != c2) throw new Exception();
+            }
+
+            public int C
+            {
+                get { return c1; }
+            }
+
+
+            public string Cas1
+            {
+                get { return cas1; }
+            }
+
+            public string Cas2
+            {
+                get { return cas2; }
+            }
+
+
+        }
+
+
+	}
+}
