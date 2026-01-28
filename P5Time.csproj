@@ -31,7 +31,7 @@
     <ManifestCertificateThumbprint>5750A6DB0CB39604A6F37E46A34EDE289B27E83C</ManifestCertificateThumbprint>
     <ManifestKeyFile>P5Time_TemporaryKey.pfx</ManifestKeyFile>
     <GenerateManifests>true</GenerateManifests>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -67,7 +67,7 @@
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
     <DebugType>full</DebugType>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -134,6 +134,31 @@
     <None Include="p5time_svazvodaku_czDataSet3.xss">
       <DependentUpon>p5time_svazvodaku_czDataSet3.xsd</DependentUpon>
     </None>
+    <Compile Include="p5time_svazvodaku_czDataSet.Designer.cs">
+      <DependentUpon>p5time_svazvodaku_czDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="p5time_svazvodaku_czDataSet1.Designer.cs">
+      <DependentUpon>p5time_svazvodaku_czDataSet1.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="p5time_svazvodaku_czDataSet2.Designer.cs">
+      <DependentUpon>p5time_svazvodaku_czDataSet2.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="p5time_svazvodaku_czDataSet3.Designer.cs">
+      <DependentUpon>p5time_svazvodaku_czDataSet3.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="p5time_svazvodaku_czStatusy.Designer.cs">
+      <DependentUpon>p5time_svazvodaku_czStatusy.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <None Include="p5time_svazvodaku_czStatusy.xsc">
       <DependentUpon>p5time_svazvodaku_czStatusy.xsd</DependentUpon>
     </None>
@@ -317,10 +342,9 @@
     </PublishFile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="library\excelpackage\src\ExcelPackage.csproj">
-      <Project>{7B288026-5502-4A39-BF41-77E086F3E4A3}</Project>
-      <Name>ExcelPackage</Name>
-    </ProjectReference>
+    <Reference Include="ExcelPackage">
+      <HintPath>library\excelpackage\src\bin\Debug\ExcelPackage.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

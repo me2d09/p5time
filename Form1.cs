@@ -2804,15 +2804,23 @@ namespace P5Time
                     }
                 }
             }
-        }
-
-
-        private void Form1_Load(object sender, EventArgs e)
+        }        private void Form1_Load(object sender, EventArgs e)
         {
             //kdyz je nacteny form, nactu data do comboboxu
-            this.cis_statusyTableAdapter.Fill(this.p5time_svazvodaku_czStatusy.cis_statusy);
-            this.cis_kategoriiTableAdapter.Fill(this.p5time_svazvodaku_czDataSet3.cis_kategorii);
-            if (Common.AutoStart) toolStripButton1_Click(sender, new EventArgs());
+            try
+            {
+                this.cis_statusyTableAdapter.Fill(this.p5time_svazvodaku_czStatusy.cis_statusy);
+                this.cis_kategoriiTableAdapter.Fill(this.p5time_svazvodaku_czDataSet3.cis_kategorii);
+                if (Common.AutoStart) toolStripButton1_Click(sender, new EventArgs());
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Nepodaøilo se pøipojit k databázi: " + ex.Message, "Chyba pøipojení", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                statusDB.Text = "odpojeno";
+                tabControl1.Enabled = false;
+                toolStripButton1.Visible = true;
+                toolStripButton2.Visible = false;
+            }
         }
 
 
@@ -4322,3 +4330,7 @@ namespace P5Time
 
 	}
 }
+
+
+
+

@@ -46,3 +46,27 @@ D:\Documents-Store\Visual Studio 2008\Projects\MySQL\Table Editor\cs\obj\Debug\P
 D:\Documents-Store\Visual Studio 2008\Projects\MySQL\Table Editor\cs\obj\Debug\PrintDataGrid.PrintOptions.resources
 D:\Documents-Store\Visual Studio 2008\Projects\MySQL\Table Editor\cs\obj\Debug\P5Time.Properties.Resources.resources
 D:\Documents-Store\Visual Studio 2008\Projects\MySQL\Table Editor\cs\obj\Debug\P5Time.csproj.GenerateResource.Cache
+D:\repos\p5time\obj\Debug\P5Time.exe
+D:\repos\p5time\obj\Debug\P5Time.pdb
+D:\repos\p5time\obj\Debug\P5Time.csproj.AssemblyReference.cache
+D:\repos\p5time\obj\Debug\P5Time.frmBranky.resources
+D:\repos\p5time\obj\Debug\P5Time.frmNewOsoba.resources
+D:\repos\p5time\obj\Debug\P5Time.Form1.resources
+D:\repos\p5time\obj\Debug\P5Time.Form2.resources
+D:\repos\p5time\obj\Debug\P5Time.frmNewPohar.resources
+D:\repos\p5time\obj\Debug\PrintDataGrid.MainForm.resources
+D:\repos\p5time\obj\Debug\PrintDataGrid.PrintOptions.resources
+D:\repos\p5time\obj\Debug\P5Time.Properties.Resources.resources
+D:\repos\p5time\obj\Debug\P5Time.csproj.GenerateResource.cache
+D:\repos\p5time\obj\Debug\P5Time.csproj.CoreCompileInputs.cache
+D:\repos\p5time\bin\Debug\P5Time.exe.config
+D:\repos\p5time\bin\Debug\P5Time.exe
+D:\repos\p5time\bin\Debug\P5Time.pdb
+D:\repos\p5time\bin\Debug\ExcelPackage.dll
+D:\repos\p5time\bin\Debug\MySQL.Data.dll
+D:\repos\p5time\bin\Debug\ExcelPackage.pdb
+D:\repos\p5time\bin\Debug\P5Time.exe.manifest
+D:\repos\p5time\bin\Debug\P5Time.application
+D:\repos\p5time\obj\Debug\P5Time.exe.manifest
+D:\repos\p5time\obj\Debug\P5Time.application
+D:\repos\p5time\obj\Debug\P5Time.csproj.Up2Date

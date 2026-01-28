@@ -9,3 +9,8 @@ C:\Users\cermak\Documents\Visual Studio 2008\Library\excelpackage\src\obj\Debug\
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\src\obj\Debug\ExcelPackage.csprojResolveAssemblyReference.cache
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\src\obj\Debug\ExcelPackage.dll
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\src\obj\Debug\ExcelPackage.pdb
+D:\repos\p5time\library\excelpackage\src\bin\Debug\ExcelPackageXmlDocumentationFile.xml
+D:\repos\p5time\library\excelpackage\src\obj\Debug\ExcelPackage.csproj.AssemblyReference.cache
+D:\repos\p5time\library\excelpackage\src\obj\Debug\ExcelPackage.csproj.CoreCompileInputs.cache
+D:\repos\p5time\library\excelpackage\src\obj\Debug\ExcelPackage.dll
+D:\repos\p5time\library\excelpackage\src\obj\Debug\ExcelPackage.pdb

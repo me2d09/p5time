@@ -4,11 +4,11 @@
   <Settings>
     <Setting Name="conn" Type="(Connection string)" Scope="Application">
       <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;SerializableConnectionString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;ConnectionString&gt;server=localhost;user id=root;Password="Wbr 1476";persist security info=True;database=p5time_svazvodaku_cz&lt;/ConnectionString&gt;
+&lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;ConnectionString&gt;server=svocr;port=3307;user id=remote;Password="";persist security info=True;database=p5time_svazvodaku_cz&lt;/ConnectionString&gt;
   &lt;ProviderName&gt;MySql.Data.MySqlClient&lt;/ProviderName&gt;
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
-      <Value Profile="(Default)">server=localhost;user id=root;Password="Wbr 1476";persist security info=True;database=p5time_svazvodaku_cz</Value>
+      <Value Profile="(Default)">server=svocr;port=3307;user id=remote;Password="";persist security info=True;database=p5time_svazvodaku_cz</Value>
     </Setting>
   </Settings>
 </SettingsFile>

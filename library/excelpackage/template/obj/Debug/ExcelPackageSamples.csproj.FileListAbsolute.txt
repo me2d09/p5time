@@ -10,3 +10,5 @@ C:\Users\cermak\Documents\Visual Studio 2008\Library\excelpackage\template\obj\D
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\template\obj\Debug\ExcelPackageSamples.csprojResolveAssemblyReference.cache
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\template\obj\Debug\ExcelPackageSamples.exe
 D:\Documents-Store\Visual Studio 2008\Library\excelpackage\template\obj\Debug\ExcelPackageSamples.pdb
+D:\repos\p5time\library\excelpackage\template\obj\Debug\ExcelPackageSamples.exe
+D:\repos\p5time\library\excelpackage\template\obj\Debug\ExcelPackageSamples.pdb
