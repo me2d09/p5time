@@ -2,6 +2,13 @@
 
 Starší desktopová aplikace pro průběžné zadávání výsledků závodů do MySQL. Hlavní okno umí udržovat spojení s DB a během závodu zapisovat starty, cíle, penalizace, výsledky a generovat výsledkovky.
 
+## Autor
+- Petr Čermák (GitHub: `me2d09`)
+- Web:
+```text
+https://cermak.science/
+```
+
 ## Technologie / runtime
 - .NET Framework **3.5** (WinForms) – viz `P5Time.csproj` (`<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>`)
 - Visual Studio 2010 (Solution Format 11.00) – viz `P5Time.sln`
