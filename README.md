@@ -7,6 +7,7 @@ Starší desktopová aplikace pro průběžné zadávání výsledků závodů d
 - Visual Studio 2010 (Solution Format 11.00) – viz `P5Time.sln`
 - MySQL konektor **MySql.Data** (v manifestech je **5.2.1.0**)
 - Export do XLSX přes **ExcelPackage/EPPlus** (přibalené ve `library\excelpackage`)
+  - používá se DLL: `library\excelpackage\src\bin\Debug\ExcelPackage.dll`
 
 ## Struktura projektu (rychlý přehled)
 - `Form1.cs` – **hlavní okno** aplikace; většina logiky, napojení na DB, taby (číselníky, posádky, rozlosování, startovka, výsledky, výsledkovka, …)
@@ -33,8 +34,9 @@ Aplikace ukládá některá nastavení do **HKCU\Software\SVoCR\P5Time**:
 
 ## Build / spuštění
 1. Otevři `P5Time.sln` ve Visual Studiu (ideálně 2010+, s podporou .NET Framework 3.5).
+   - Ozkoušeno ve **VS 2012** – projekt se buildí.
 2. Zkontroluj dostupnost **MySql.Data.dll** (v projektu je reference na `bin\MySQL.Data.dll`).
-3. Projekt má reference na **ExcelPackage** v repu (`library\excelpackage\src\ExcelPackage.csproj`).
+3. Excel export používá DLL `library\excelpackage\src\bin\Debug\ExcelPackage.dll` (je zahrnuto v repo).
 4. Nastav připojení k DB buď v `app.config`, nebo v GUI (Form2).
 5. Spusť projekt (entry point je `Form1.Main`).
 
