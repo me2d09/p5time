@@ -22,7 +22,6 @@ Starší desktopová aplikace pro průběžné zadávání výsledků závodů d
 
 ## Konfigurace připojení (MySQL)
 - `app.config` obsahuje connection string **P5Time.Properties.Settings.conn**.
-- Pozor: v repu je uložené **heslo** – doporučuji ho změnit a v reálném provozu necommitovat reálné údaje.
 
 ### Ukládání nastavení do registru
 Aplikace ukládá některá nastavení do **HKCU\Software\SVoCR\P5Time**:
