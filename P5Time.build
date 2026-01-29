@@ -1,5 +1,5 @@
-<project name="TableEditor" default="default" xmlns="http://nant.sf.net/schemas/nant-0.84.win32.net-1.0.xsd">
-	<description>TableEditor sample</description>
+<project name="P5Time" default="default" xmlns="http://nant.sf.net/schemas/nant-0.84.win32.net-1.0.xsd">
+	<description>P5Time build</description>
 
 	<property name="buildType" value="release"/>
 	
@@ -22,7 +22,7 @@
 		<property name="nant.settings.currentframework" value="${framework}"/>
 		<mkdir dir="bin/${framework}/${buildType}" failonerror="false"/>
 		
-		<csc output="bin/${framework}/${buildType}/TableEditor.exe" target="winexe" debug="${debug}">
+		<csc output="bin/${framework}/${buildType}/P5Time.exe" target="winexe" debug="${debug}">
 			<references>
 				<include name="../../../bin/${framework}/${buildType}/MySql.Data.dll"/>
 			</references>

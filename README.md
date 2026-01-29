@@ -4,7 +4,7 @@ Starší desktopová aplikace pro průběžné zadávání výsledků závodů d
 
 ## Technologie / runtime
 - .NET Framework **3.5** (WinForms) – viz `P5Time.csproj` (`<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>`)
-- Visual Studio 2010 (Solution Format 11.00) – viz `TableEditor.sln`
+- Visual Studio 2010 (Solution Format 11.00) – viz `P5Time.sln`
 - MySQL konektor **MySql.Data** (v manifestech je **5.2.1.0**)
 - Export do XLSX přes **ExcelPackage/EPPlus** (přibalené ve `library\excelpackage`)
 
@@ -32,7 +32,7 @@ Aplikace ukládá některá nastavení do **HKCU\Software\SVoCR\P5Time**:
 - `LastUsedPohar`, `LastZavod`, `LastTab`
 
 ## Build / spuštění
-1. Otevři `TableEditor.sln` ve Visual Studiu (ideálně 2010+, s podporou .NET Framework 3.5).
+1. Otevři `P5Time.sln` ve Visual Studiu (ideálně 2010+, s podporou .NET Framework 3.5).
 2. Zkontroluj dostupnost **MySql.Data.dll** (v projektu je reference na `bin\MySQL.Data.dll`).
 3. Projekt má reference na **ExcelPackage** v repu (`library\excelpackage\src\ExcelPackage.csproj`).
 4. Nastav připojení k DB buď v `app.config`, nebo v GUI (Form2).
